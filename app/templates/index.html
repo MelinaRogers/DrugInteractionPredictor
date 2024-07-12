@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drug Interaction Predictor</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Drug Interaction Predictor</h1>
+    <p>Enter the SMILES strings of two drugs to predict their interaction:</p>
+    <input type="text" id="smiles1" placeholder="SMILES string for drug 1">
+    <input type="text" id="smiles2" placeholder="SMILES string for drug 2">
+    <button onclick="predict()">Predict Interaction</button>
+    <div id="result"></div>
+
+    <script>
+        function predict() {
+            var smiles1 = $('#smiles1').val();
+            var smiles2 = $('#smiles2').val();
+
+            $.ajax({
+                url: '/predict',
+                method: 'POST',
+                data: {
+                    smiles1: smiles1,
+                    smiles2: smiles2
+                },
+                success: function(response) {
+                    if (response.error) {
+                        $('#result').text('Error: ' + response.error);
+                    } else {
+                        $('#result').html('Predicted Interaction: ' + response.interaction + 
+                                          '<br>Confidence: ' + response.confidence);
+                    }
+                },
+                error: function() {
+                    $('#result').text('An error occurred');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

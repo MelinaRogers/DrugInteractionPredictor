@@ -1,0 +1,53 @@
+import unittest
+import os
+import shutil
+import pandas as pd
+from data_preprocessing import DrugDataPreprocessor
+
+class TestDrugDataPreprocessor(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Create a small test dataset
+        cls.test_data = pd.DataFrame({
+            'smiles1': ['CC(=O)OC1=CC=CC=C1C(=O)O', 'CN1C=NC2=C1C(=O)N(C(=O)N2C)C'],
+            'smiles2': ['CC(C)(C)NCC(O)C1=CC(=C(C=C1)O)CO', 'CCO'],
+            'interaction_type': ['increase', 'decrease']
+        })
+        cls.test_data.to_csv('test_drug_interactions.csv', index=False)
+        
+        cls.test_output_dir = 'test_processed_data'
+        os.makedirs(cls.test_output_dir, exist_ok=True)
+
+    @classmethod
+    def tearDownClass(cls):
+        # Clean up test files and directories
+        os.remove('test_drug_interactions.csv')
+        shutil.rmtree(cls.test_output_dir)
+
+    def setUp(self):
+        self.preprocessor = DrugDataPreprocessor('test_drug_interactions.csv', self.test_output_dir)
+
+    def test_load_data(self):
+        self.preprocessor.load_data()
+        self.assertIsNotNone(self.preprocessor.data)
+        self.assertEqual(len(self.preprocessor.data), 2)
+
+    def test_prepare_labels(self):
+        self.preprocessor.load_data()
+        self.preprocessor.prepare_labels()
+        self.assertIsNotNone(self.preprocessor.label_mapping)
+        self.assertEqual(len(self.preprocessor.label_mapping), 2)
+
+    def test_create_dataset(self):
+        self.preprocessor.create_dataset()
+        self.assertIsNotNone(self.preprocessor.dataset)
+        self.assertEqual(len(self.preprocessor.dataset), 2)
+
+    def test_split_data(self):
+        self.preprocessor.create_dataset()
+        train_indices, test_indices = self.preprocessor.split_data(test_size=0.5)
+        self.assertEqual(len(train_indices), 1)
+        self.assertEqual(len(test_indices), 1)
+
+if __name__ == '__main__':
+    unittest.main()
